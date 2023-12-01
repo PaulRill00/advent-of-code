@@ -1,0 +1,1 @@
+export type DayFunction = (input: string[]) => string;
