@@ -1,41 +1,36 @@
 import { DayFunction } from '../DayFunction';
 
 const dayFn: DayFunction = (input) => {
-    const maxValues = {
-        red: 12,
-        green: 13,
-        blue: 14
-    }
-
-    let gameIdTotal = 0;
+    let total = 0;
 
     input.forEach(game => {
-        const [gameName, subSets] = game.split(': ');
-
-        const gameId = Number(gameName.replaceAll('Game ', ''));
+        const subSets = game.split(': ')[1];
         const sets = subSets.split('; ');
 
-        let validGame = true;
+        const lowestValues = {
+            red: 0,
+            blue: 0,
+            green: 0
+        }
 
-        setsloop: for(let set of sets) {
+        for(let set of sets) {
             const values = set.split(', ');
 
             for (let colorString of values) {
-                const color = Object.keys(maxValues).find(x => colorString.includes(x))!;
+                const color = ['red', 'green', 'blue'].find(x => colorString.includes(x))!;
                 const value = Number(colorString.replace(` ${color}`, ''));
 
-                if (value > maxValues[color]) {
-                    validGame = false;
-                    break setsloop;
+                if (value > lowestValues[color]) {
+                    lowestValues[color] = value;
                 }
             }
         }
 
-        if (validGame)
-            gameIdTotal += gameId;
+        const gameTotal = lowestValues.red * lowestValues.blue * lowestValues.green;
+        total += gameTotal;
     })
 
-    return `Total of game ids: ${gameIdTotal}`;
+    return `Total of game ids: ${total}`;
 }
 
 export default dayFn;
