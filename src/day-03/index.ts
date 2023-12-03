@@ -7,30 +7,43 @@ const dayFn: DayFunction = (input) => {
 
     for (let row = 0; row < rowLength; row++) {
         for (let col = 0; col < colLength; col++) {
-            if (!/\d/.test(input[row][col])) continue;
+            if (input[row][col] !== '*') continue;
 
-            // This is the first digit of a number, now to find the rest
-            let num = input[row][col];
+            const numbers: number[] = [];
 
-            for (let l = col + 1; l < colLength; l++) {
-                if (!/\d/.test(input[row][l])) break;
+            for (let offsetY = Math.max(0, row - 1); offsetY < Math.min(rowLength, row + 2); offsetY++) {
+                for (let offsetX = Math.max(0, col - 1); offsetX < Math.min(colLength, col + 2); offsetX++) {
+                    if (!/\d/.test(input[offsetY][offsetX]))
+                        continue;
 
-                num += input[row][l];
-            }
+                    let num = input[offsetY][offsetX];
+                    let rOffsetCount = 0;
 
-            // Check adjacent symbols
-            checkloop: for (let offsetX = Math.max(0, col - 1); offsetX < Math.min(colLength, col + num.length + 1); offsetX++) {
-                for (let offsetY = Math.max(0, row - 1); offsetY < Math.min(rowLength, row + 2); offsetY++) {
+                    // Traverse backwards
+                    for (let l = offsetX - 1; l >= 0; l--) {
+                        if (!/\d/.test(input[offsetY][l])) break;
 
-                    // Test for anything that is not a number, nor a dot.
-                    if (/[^\d.]+/.test(input[offsetY][offsetX])) {
-                        total += Number(num);
-                        break checkloop;
+                        num = `${input[offsetY][l]}${num}`;
                     }
+
+                    // Traverse forward
+                    for (let l = offsetX + 1; l < colLength; l++) {
+                        if (!/\d/.test(input[offsetY][l])) break;
+
+                        num = `${num}${input[offsetY][l]}`;
+                        rOffsetCount++;
+                    }
+
+                    offsetX += rOffsetCount;
+
+                    numbers.push(Number(num));
                 }
             }
 
-            col += num.length - 1;
+            if (numbers.length < 2)
+                continue;
+
+            total += (numbers[0] * numbers[1]);
         }
     }
 
