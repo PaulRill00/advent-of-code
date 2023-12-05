@@ -2,6 +2,11 @@ import { DayFunction } from '../DayFunction';
 
 const dayFn: DayFunction = (input) => {
     const seeds = input[0].replaceAll('seeds: ', '').split(' ').map(Number) ?? [];
+    const pairs = seeds.reduce((acc, val, index) => {
+        if (index % 2 === 0)
+            acc.push([val, seeds[index + 1]])
+        return acc;
+    }, [] as [number, number][]);
 
     const mapNames = [
         'seed-to-soil',
@@ -14,7 +19,7 @@ const dayFn: DayFunction = (input) => {
     ];
     const maps = new Map<string, [number, number, number][]>();
 
-    let mapName: undefined|string = undefined;
+    let mapName: undefined | string = undefined;
 
     // Sort all data into the maps
     for (const row of input) {
@@ -30,28 +35,47 @@ const dayFn: DayFunction = (input) => {
         maps.set(mapName ?? '', [...(maps.get(mapName ?? '') ?? []), values])
     }
 
-    
-    const locations = new Map<number, number>();
-    // Iterate all seeds
-    for (const seed of seeds) {
-        let value = seed;
+    let lowestLocation = Infinity;
+
+    for (const [start, size] of pairs) {
+        let ranges: [number, number][] = [[start, start + size]];
+
+        // for const func of functions
         for (const _map of mapNames) {
-            const map = maps.get(_map) ?? [];
-            
-            const values = map.find(([_, start, length]) => value >= start && value < start + length);
+            const result: [number, number][] = [];
+            const tuples = maps.get(_map) ?? [];
 
-            if (!values) continue;
+            for (const [destination, source, size] of tuples) {
+                const sourceEnd = source + size;
+                const newRanges: [number, number][] = [];
 
-            const [destinationStart, rangeStart] = values;
-            const offset = value - rangeStart;
-            value = destinationStart + offset;
+                while (ranges.length > 0) {
+                    const [start, end] = ranges.pop()!;
+
+                    const before: [number, number] = [start, Math.min(end, source)];
+                    const inter: [number, number] = [Math.max(start, source), Math.min(sourceEnd, end)];
+                    const after: [number, number] = [Math.max(sourceEnd, start), end];
+
+                    if (before[1] > before[0])
+                        newRanges.push(before);
+                    if (inter[1] > inter[0])
+                        result.push([inter[0] - source + destination, inter[1] - source + destination]);
+                    if (after[1] > after[0])
+                        newRanges.push(after)
+                }
+
+                ranges = newRanges;
+            }
+
+            ranges = result.concat(ranges);
         }
 
-        locations.set(seed, value);
+        const lowestValue = Math.min(...ranges.map(x => x[0]));
+        if (lowestValue < lowestLocation)
+            lowestLocation = lowestValue;
     }
 
-    const [lowestItem] = [...locations.entries()].sort(([ ,v1], [ ,v2]) => v1 - v2);
-    return `Lowest location is: ${lowestItem[1]}`;
+    return `Lowest location is: ${lowestLocation}`;
 }
 
 export default dayFn;
