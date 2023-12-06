@@ -1,28 +1,42 @@
 import { DayFunction } from '../DayFunction';
 
+
 const dayFn: DayFunction = (input) => {
-    const time = input[0].split(':')[1].split(' ').map(x => x.trim()).filter(x => x.length)
-    const distance = input[1].split(':')[1].split(' ').map(x => x.trim()).filter(x => x.length)
+    const raceTime = Number(input[0].split(':')[1].replaceAll(' ', ''))
+    const raceDistance = Number(input[1].split(':')[1].replaceAll(' ', ''))
 
-    const races = time.reduce<[number, number][]>((acc, time, index) => {
-        const dt = distance[index];
-        acc.push([Number(time), Number(dt)]);
-        return acc;
-    }, []);
+    function countRanges(time: number, distance: number) {
+        let low = 0;
+        let high = Math.floor(time / 2);
 
-    let score = 1;
+        if (high * (time - high) < distance)
+            return 0;
 
-    for (const [raceTime, raceDistance] of races) {
-        let winningTimes: number[] = [];
-        for (let speed = 1; speed <= raceTime; speed++) {
-            const distance = (raceTime - speed) * speed;
-
-            if (distance > raceDistance)
-                winningTimes.push(speed);
+        function dt(x: number) {
+            return (time - x) * x;
         }
 
-        score *= winningTimes.length;
+        // Find valid ranges with binary search
+        while (low + 1 < high) {
+            const mid = Math.floor((low + high) / 2);
+            const distanceTravelled = dt(mid);
+
+            if (distanceTravelled >= distance) {
+                high = mid;
+            } else {
+                low = mid;
+            }
+        }
+
+        const first = high;
+
+        // dt(x) === dt(time - x), so the middlepoint has symmetry, therefore we can use it to get the upper bound
+        const last = Math.floor((time / 2) + (time / 2 - first));
+
+        return last - first + 1;
     }
+
+    const score = countRanges(raceTime, raceDistance);
 
     return `Racing score: ${score}`;
 }
