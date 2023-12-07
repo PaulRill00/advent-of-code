@@ -1,6 +1,6 @@
 import { DayFunction } from '../DayFunction';
 
-const CARDS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
+const CARDS = ['A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J'];
 enum HandScores {
     FIVE_OF_A_KIND = 0,
     FOUR_OF_A_KIND = 1,
@@ -29,36 +29,70 @@ class Hand {
         return map;
     }
 
+    private get containsJokers() {
+        return ~this.hand.indexOf('J');
+    }
+
+    private getJokerCount(counts: Map<string, number>): number {
+        return counts.get('J') ?? 0
+    }
+
     private isFiveOfAKind(counts: Map<string, number>) {
-        return (counts.size === 1);
+        if (counts.size === 1)
+            return true;
+
+        if (counts.size === 2 && this.containsJokers)
+            return true;
+
+        return false;
     }
 
     private isFourOfAKind(counts: Map<string, number>) {
-        if (counts.size !== 2) return false;
+        const values = [...counts.entries()]
+            .filter(([x]) => x !== 'J')
+            .map(([,a]) => a)
+            .sort((a, b) => a - b);
 
-        const values = [...counts.values()].sort((a, b) => a - b);
-        return values[0] === 1 && values[1] === 4;
+        return values[0] === 1 && (values[1] + this.getJokerCount(counts)) === 4;
     }
 
-    private isFullHouse(counts: Map<string, number>) {
-        if (counts.size !== 2) return false;
-        
-        const values = [...counts.values()].sort((a, b) => a - b);
-        return values[0] === 2 && values[1] === 3;
+    private isFullHouse(counts: Map<string, number>) {        
+        const values = [...counts.entries()]
+            .filter(([x]) => x !== 'J')
+            .map(([,a]) => a)
+            .sort((a, b) => a - b);
+
+        return (
+            (values[0] + this.getJokerCount(counts)) === 2 && values[1] === 3 ||
+            values[0] === 2 && (values[1] + this.getJokerCount(counts)) === 3
+        );
     }
 
     private isThreeOfAKind(counts: Map<string, number>) {        
-        const values = [...counts.values()].sort((a, b) => b - a);
-        return values[0] === 3;
+        const values = [...counts.entries()]
+            .filter(([x]) => x !== 'J')
+            .map(([,a]) => a)
+            .sort((a, b) => b - a);
+
+        return (values[0] + this.getJokerCount(counts)) === 3;
     }
 
     private isTwoPair(counts: Map<string, number>) {     
-        if (counts.size !== 3) return false;   
-        const values = [...counts.values()].sort((a, b) => b - a);
-        return values[0] === 2 && values[1] === 2;
+        const values = [...counts.entries()]
+            .filter(([x]) => x !== 'J')
+            .map(([,a]) => a)
+            .sort((a, b) => b - a);
+        
+        return (
+            (values[0] + this.getJokerCount(counts)) === 2 && values[1] === 2 ||
+            values[0] === 2 && (values[1] + this.getJokerCount(counts)) === 2
+        );
     }
 
     private isOnePair(counts: Map<string, number>) {     
+        if (this.getJokerCount(counts) && counts.size === 5)
+            return true;
+
         return counts.size === 4;
     }
 
