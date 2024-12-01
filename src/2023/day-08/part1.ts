@@ -1,4 +1,4 @@
-import { DayFunction } from '../DayFunction';
+import { DayFunction } from '../../DayFunction';
 
 const dayFn: DayFunction = (input) => {
     const [sequence, , ..._maps] = input;
@@ -11,7 +11,7 @@ const dayFn: DayFunction = (input) => {
 
         maps.set(start, {
             L: lr[0],
-            R: lr[1] 
+            R: lr[1]
         })
     })
 
@@ -29,7 +29,7 @@ const dayFn: DayFunction = (input) => {
         stepCount++;
 
     }
-    
+
 
     return `Amount of steps: ${stepCount}`;
 }

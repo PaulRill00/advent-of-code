@@ -1,4 +1,4 @@
-import { DayFunction } from '../DayFunction';
+import { DayFunction } from '../../DayFunction';
 
 const dayFn: DayFunction = (input) => {
     let total = 0;

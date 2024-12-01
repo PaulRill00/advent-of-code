@@ -1,4 +1,4 @@
-import { DayFunction } from '../DayFunction';
+import { DayFunction } from '../../DayFunction';
 
 const dayFn: DayFunction = (input) => {
     const seeds = input[0].replaceAll('seeds: ', '').split(' ').map(Number) ?? [];
